@@ -1,0 +1,7 @@
+pandas>=2.2.0
+matplotlib>=3.8.2
+openmeteo-requests>=1.1.0
+requests-cache>=1.1.0
+requests-retry>=0.8.0
+prophet>=1.1.5
+flask>=3.0.0
