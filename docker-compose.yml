@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  data_loading:
+    build:
+      context: .
+      dockerfile: DataLoadingDockerfile
+    volumes:
+      - ./data:/app/data:rw
+
+  create_models:
+    build:
+      context: .
+      dockerfile: CreateModelsDockerfile
+    volumes:
+      - ./models:/app/models:rw
+      - ./data:/app/data:rw
+    depends_on:
+      - data_loading
+
+  flask_app:
+    build:
+      context: .
+      dockerfile: FlaskAppDockerfile
+    ports:
+      - "5001:5000"
+    depends_on:
+      - create_models

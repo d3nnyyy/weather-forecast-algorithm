@@ -1,0 +1,11 @@
+FROM jupyter/base-notebook:latest
+
+WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . /app
+
+# Run notebook conversion
+CMD ["jupyter", "nbconvert", "--execute", "--to", "notebook", "--inplace", "data_loading.ipynb"]
