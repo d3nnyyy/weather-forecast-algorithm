@@ -8,15 +8,16 @@ converts the results to JSON, and returns the predictions when the script is run
 import json
 
 from flask import Flask, request
+from flask_cors import CORS
 
 from predict import predict_weather
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route('/predict', methods=['GET'])
 def predict():
-
     start_date = request.args.get('start_date')
     periods = int(request.args.get('periods', 24))
 
