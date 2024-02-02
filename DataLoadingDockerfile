@@ -1,11 +1,20 @@
-FROM jupyter/base-notebook:latest
+# Use an official Python runtime as a parent image
+FROM python:3.10
 
+# Set the working directory to /app
 WORKDIR /app
 
-COPY requirements.txt /app/requirements.txt
+# Copy the requirements file into the container at /app
+COPY requirements/load_data.txt /app/requirements.txt
+
+# Install the required packages for load_data
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy the current directory contents into the container at /app
 COPY . /app
 
-# Run notebook conversion
-CMD ["jupyter", "nbconvert", "--execute", "--to", "notebook", "--inplace", "data_loading.ipynb"]
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Run load_data.py when the container launches
+CMD ["python", "load_data.py"]
