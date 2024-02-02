@@ -10,7 +10,7 @@ import json
 from flask import Flask, request
 from flask_cors import CORS
 
-from predict import predict_weather
+from tools import predict_weather
 
 app = Flask(__name__)
 CORS(app)
@@ -20,8 +20,10 @@ CORS(app)
 def predict():
     start_date = request.args.get('start_date')
     periods = int(request.args.get('periods', 24))
+    latitude = float(request.args.get('latitude'))
+    longitude = float(request.args.get('longitude'))
 
-    weather_data = predict_weather(start_date, periods)
+    weather_data = predict_weather(start_date, periods, latitude, longitude)
 
     json_result = json.dumps(weather_data.to_dict(orient='records'), default=str)
 
