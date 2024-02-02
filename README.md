@@ -1,4 +1,4 @@
-# Weather Forecasting System Documentation
+# Weather Forecasting Algorithm Documentation
 
 ## Objective
 The objective of this project is to create a weather forecasting system using historical weather data obtained from an open-source API. The system includes data processing, model creation, and a Flask-based API to provide weather forecasts based on user input.
