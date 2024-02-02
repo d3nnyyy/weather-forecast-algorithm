@@ -1,12 +1,28 @@
+import logging
 import os
 import pickle
 from math import radians, sin, cos, sqrt, atan2
 
 import pandas as pd
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+NO_NEARBY_CITIES_MESSAGE = "No nearby big cities found for weather prediction."
+LOCATION_TOO_FAR_MESSAGE = "Weather prediction not possible as location is too far from any regional center."
+CITY_NOT_FOUND_MESSAGE = "City not found in the models directory."
+WEATHER_NOT_POSSIBLE_MESSAGE = "Weather prediction not possible due to lack of nearby big cities."
+
+
+def get_absolute_path(relative_path):
+    current_script_directory = os.path.dirname(__file__)
+    absolute_path = os.path.join(current_script_directory, relative_path)
+    return absolute_path
+
 
 def is_big_city(latitude, longitude, threshold=0.01):
-    cities_df = pd.read_csv('data/list_of_cities.csv')
+    csv_file_path = get_absolute_path('data/list_of_cities.csv')
+    cities_df = pd.read_csv(csv_file_path)
     for index, row in cities_df.iterrows():
 
         lat = row['lat']
@@ -23,7 +39,7 @@ def get_models_for_big_city(city_name):
     models = {}
 
     if not os.path.exists(city_folder):
-        print(f"City {city_name} not found in the models directory")
+        logger.error(f"{CITY_NOT_FOUND_MESSAGE} City {city_name}")
         return models
 
     for variable in os.listdir(city_folder):
@@ -40,6 +56,9 @@ def predict_weather_for_big_city(start_date, periods, city_name):
     combined_df = pd.DataFrame({'ds': result_df['ds']})
 
     loaded_models = get_models_for_big_city(city_name)
+
+    if not loaded_models:
+        return combined_df
 
     for variable in loaded_models:
         result = loaded_models[variable].predict(result_df)
@@ -83,6 +102,9 @@ def find_nearest_big_cities(latitude, longitude, num_cities=3):
 
 
 def calculate_weighted_weather(start_date, periods, nearest_cities):
+    if not nearest_cities:
+        return pd.DataFrame({'ds': pd.date_range(start=start_date, periods=periods, freq='h')})
+
     inverted_distances = [1 / distance for _, distance in nearest_cities]
     total_inverted_distance = sum(inverted_distances)
     distances_weights = [distance / total_inverted_distance for distance in inverted_distances]
@@ -95,8 +117,24 @@ def calculate_weighted_weather(start_date, periods, nearest_cities):
     return pd.concat(weather_dfs).groupby(level=0).mean().reset_index()
 
 
-def predict_weather_for_small_city(start_date, periods, latitude, longitude):
+def predict_weather_for_small_city(start_date, periods, latitude, longitude, max_distance_for_prediction=200):
     nearest_cities_data = find_nearest_big_cities(latitude, longitude)
+
+    # Check if there are no nearby big cities
+    if not nearest_cities_data:
+        logger.error(NO_NEARBY_CITIES_MESSAGE)
+        return pd.DataFrame({'ds': pd.date_range(start=start_date, periods=periods, freq='h'),
+                             'message': WEATHER_NOT_POSSIBLE_MESSAGE})
+
+    # Get the distance to the nearest big city
+    nearest_distance = nearest_cities_data[0][1]
+
+    # Check if the distance is greater than the specified threshold
+    if nearest_distance > max_distance_for_prediction:
+        logger.error(f"{LOCATION_TOO_FAR_MESSAGE} (Distance: {nearest_distance} km)")
+        return pd.DataFrame({'ds': pd.date_range(start=start_date, periods=periods, freq='h'),
+                             'message': LOCATION_TOO_FAR_MESSAGE})
+
     weighted_weather = calculate_weighted_weather(start_date, periods, nearest_cities_data)
     return weighted_weather
 
@@ -108,8 +146,3 @@ def predict_weather(start_date, periods, latitude, longitude):
         return predict_weather_for_big_city(start_date, periods, city_name)
     else:
         return predict_weather_for_small_city(start_date, periods, latitude, longitude)
-
-
-weather_data = predict_weather("2023-07-01", 5, 50.4500336, 30.5241361)
-print(weather_data.columns)
-print(weather_data.head())

@@ -1,20 +1,30 @@
+import logging
 import os
 import pickle
 
 import pandas as pd
 from prophet import Prophet
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def get_absolute_path(relative_path):
+    current_script_directory = os.path.dirname(__file__)
+    absolute_path = os.path.join(current_script_directory, relative_path)
+    return absolute_path
+
 
 def create_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
-        print(f"Directory {directory} created")
+        logger.info(f"Directory {directory} created")
     else:
-        print(f"Directory {directory} already exists")
+        logger.info(f"Directory {directory} already exists")
 
 
 def load_city_data(city_name):
-    file_path = f"data/{city_name}_weather.csv"
+    file_path = get_absolute_path(f"data/{city_name}_weather.csv")
     df = pd.read_csv(file_path)
 
     column_mapping = {
@@ -35,7 +45,7 @@ def load_city_data(city_name):
 
 
 def load_hyperparameters(model_name):
-    hyperparameters_df = pd.read_csv("data/models_hyperparameters.csv")
+    hyperparameters_df = pd.read_csv(get_absolute_path("data/models_hyperparameters.csv"))
     model_params = hyperparameters_df[hyperparameters_df['model'] == model_name].iloc[0]
     return model_params['changepoint_prior_scale'], model_params['seasonality_prior_scale']
 
@@ -45,7 +55,7 @@ create_directory(models_directory)
 
 models = {}
 
-cities_df = pd.read_csv("data/list_of_cities.csv")
+cities_df = pd.read_csv(get_absolute_path("data/list_of_cities.csv"))
 cities = cities_df['city'].str.lower()
 
 for city_name in cities:
@@ -79,7 +89,7 @@ for city_name in cities:
         # Check if the model file exists in the city folder
         model_filename = os.path.join(model_directory_city, f"{variable}.pkl")
         if os.path.exists(model_filename):
-            print(f"Model for {variable} in {city_name} already exists.")
+            logger.info(f"Model for {variable} in {city_name} already exists.")
         else:
             # Create and train the model with hyperparameters
             model = Prophet(changepoint_prior_scale=changepoint_prior_scale,
@@ -90,6 +100,6 @@ for city_name in cities:
             # Save the model to the city folder
             with open(model_filename, 'wb') as f:
                 pickle.dump(model, f)
-            print(f"Model for {variable} in {city_name} trained and saved to {model_filename}")
+            logger.info(f"Model for {variable} in {city_name} trained and saved to {model_filename}")
 
     models[city_name] = city_models
