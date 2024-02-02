@@ -50,6 +50,41 @@ This method helps the system make precise weather predictions for cities without
 - If the location corresponds to a big city, the system provides weather forecasts directly from the trained Prophet models.
 - For small cities, the system identifies nearby big cities, calculates weighted weather predictions, and returns the forecast.
 
+## Model Accuracy and Data Visualization
+
+### Performance Metrics
+
+The accuracy of the weather forecasting models varies for different weather variables. Below are performance metrics for temperature (`temp_2`) in Kyiv and wind speed (`w_speed`) in Kharkiv:
+
+- **Temperature (temp_2) in Kyiv:**
+  - MAE: 2.67
+  - MSE: 11.48
+  - R2: 0.88
+
+- **Wind Speed (w_speed) in Kharkiv:**
+  - MAE: 6.79
+  - MSE: 72.29
+  - R2: 0.16
+
+These metrics provide insights into the model's accuracy in predicting specific weather conditions. While the model performs well for temperature prediction, forecasting variables like wind speed can be more challenging, as indicated by the lower R2 value.
+
+### Data Visualization
+
+In the `models_testing.ipynb` notebook, visualizations demonstrate the model's performance on different weather variables. Here are two examples:
+
+1. **Temperature Prediction in Kyiv:**
+   ![Temperature Prediction](images/temperature_prediction_plot.png)
+
+   The plot shows the observed temperature values in blue and the predicted values in red. The model achieves high accuracy in capturing temperature trends.
+
+2. **Wind Speed Prediction in Kharkiv:**
+   ![Wind Speed Prediction](images/wind_speed_prediction_plot.png)
+
+   The plot illustrates the challenges in forecasting wind speed, with notable deviations between observed and predicted values.
+
+These visualizations offer a comprehensive view of the model's strengths and challenges in predicting specific weather variables, aiding in the interpretation of performance metrics.
+
+
 ## Usage
 
 1. **Data Loading**: Historical weather data is loaded using the Open Meteo API and stored in CSV files for each city.
