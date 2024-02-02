@@ -19,18 +19,21 @@ def is_big_city(latitude, longitude, threshold=0.01):
 
 def get_models_for_big_city(city_name):
     models_folder = 'models'
-    city_folder = os.path.join(models_folder, str(city_name))
+    city_folder = os.path.join(models_folder, str(city_name.lower()))
     models = {}
 
     if not os.path.exists(city_folder):
+        print(f"City {city_name} not found in the models directory")
         return models
 
     for variable in os.listdir(city_folder):
         if variable.endswith('.pkl'):
             model_path = os.path.join(city_folder, variable)
+            variable_name = variable.replace('_prophet_model.pkl', '')
             with open(model_path, 'rb') as f:
-                models[variable] = pickle.load(f)
+                models[variable_name] = pickle.load(f)
 
+    print(f"Loaded models for {city_name}: {models.keys()}")
     return models
 
 
@@ -39,10 +42,22 @@ def predict_weather_for_big_city(start_date, periods, city_name):
     combined_df = pd.DataFrame({'ds': result_df['ds']})
 
     loaded_models = get_models_for_big_city(city_name)
+
+    print(f"Loaded models for {city_name}: {loaded_models.keys()}")
+
     for variable in loaded_models:
+        print(f"Predicting {variable} for {city_name}")
+
         result = loaded_models[variable].predict(result_df)
+
+        print("Predicted values:")
+        print(result.head())
+
         combined_df[variable] = result['yhat']
-        combined_df.columns = combined_df.columns.str.replace('.pkl', '')
+
+        print("Combined df:")
+        print(combined_df.head())
+
     return combined_df
 
 
@@ -88,7 +103,7 @@ def calculate_weighted_weather(start_date, periods, nearest_cities):
 
     # return pd.concat(weather_dfs).groupby(level=0).apply(lambda x: (x * distances_weights).sum()).reset_index()
 
-    #return mean for now
+    # return mean for now
     return pd.concat(weather_dfs).groupby(level=0).mean().reset_index()
 
 
@@ -107,5 +122,6 @@ def predict_weather(start_date, periods, latitude, longitude):
         return predict_weather_for_small_city(start_date, periods, latitude, longitude)
 
 
-print(predict_weather("2023-07-01", 5, 49.5557716, 25.591886)['temp_2'])
-print(predict_weather("2023-07-01", 5, 50.130550, 25.259340)['temp_2'])
+weather_data = predict_weather("2023-07-01", 5, 49.5557716, 25.591886)
+print(weather_data.columns)
+print(weather_data.head())
