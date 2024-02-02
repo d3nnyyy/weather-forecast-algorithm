@@ -139,3 +139,18 @@ def predict_weather(start_date, periods, latitude, longitude):
         return predict_weather_for_big_city(start_date, periods, city_name)
     else:
         return predict_weather_for_small_city(start_date, periods, latitude, longitude)
+
+
+def calculate_daily_medians(weather_data, days):
+    daily_medians = []
+    periods_per_day = 24
+
+    for day in range(days):
+        start_index = day * periods_per_day
+        end_index = start_index + periods_per_day
+        daily_data = weather_data.iloc[start_index:end_index]
+        daily_median = daily_data.median().to_frame().transpose()
+        daily_medians.append(daily_median)
+
+    result_df = pd.concat(daily_medians, ignore_index=True)
+    return result_df

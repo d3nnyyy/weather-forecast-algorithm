@@ -16,13 +16,13 @@ def setup_openmeteo_client():
     return openmeteo_requests.Client(session=retry_session)
 
 
-def make_api_request(openmeteo, latitude, longitude):
+def make_api_request(openmeteo, latitude, longitude, start_date, end_date):
     url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
         "latitude": latitude,
         "longitude": longitude,
-        "start_date": "2022-01-01",
-        "end_date": "2022-01-30",
+        "start_date": start_date,
+        "end_date": end_date,
         "hourly": ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "precipitation", "rain",
                    "surface_pressure", "cloud_cover", "wind_speed_100m", "wind_direction_100m"]
     }
@@ -56,7 +56,7 @@ def save_to_csv(dataframe, csv_filename):
     logger.info(f"Data saved to {csv_filename}")
 
 
-def process_city_data(openmeteo, city_row):
+def process_city_data(openmeteo, city_row, start_date, end_date):
     latitude = city_row['lat']
     longitude = city_row['lon']
     city_name = city_row['city'].lower()
@@ -68,7 +68,7 @@ def process_city_data(openmeteo, city_row):
         return
 
     try:
-        responses = make_api_request(openmeteo, latitude, longitude)
+        responses = make_api_request(openmeteo, latitude, longitude, start_date, end_date)
         response = responses[0]
         dataframe = process_api_response(response)
         save_to_csv(dataframe, csv_filename)
@@ -81,5 +81,8 @@ if __name__ == '__main__':
     openmeteo = setup_openmeteo_client()
     cities_df = pd.read_csv('data/list_of_cities.csv')
 
+    start_date = pd.to_datetime('today') - pd.Timedelta(days=365 * 5)
+    end_date = pd.to_datetime('today') - pd.Timedelta(days=7)
+
     for index, city_row in cities_df.iterrows():
-        process_city_data(openmeteo, city_row)
+        process_city_data(openmeteo, city_row, start_date, end_date)

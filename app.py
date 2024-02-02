@@ -10,7 +10,7 @@ import json
 from flask import Flask, request
 from flask_cors import CORS
 
-from tools import predict_weather
+from tools import predict_weather, calculate_daily_medians
 
 app = Flask(__name__)
 CORS(app)
@@ -41,9 +41,9 @@ def predict_days():
 
     weather_data = predict_weather(start_date, periods, latitude, longitude)
 
-    median_data = weather_data.median()
+    result_df = calculate_daily_medians(weather_data, days)
 
-    json_result = json.dumps(median_data.to_dict(), default=str)
+    json_result = json.dumps(result_df.to_dict(), default=str)
 
     return json_result
 
