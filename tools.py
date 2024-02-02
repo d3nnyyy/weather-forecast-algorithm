@@ -84,18 +84,14 @@ def haversine(lat1, lon1, lat2, lon2):
 def find_nearest_big_cities(latitude, longitude, num_cities=3):
     cities_df = pd.read_csv('data/list_of_cities.csv')
 
-    # Initialize a list to store distances, corresponding city data, and their distances
     city_distances = []
 
     for index, city in cities_df.iterrows():
-        # Calculate haversine distance for each city
         distance = haversine(latitude, longitude, city['lat'], city['lon'])
         city_distances.append((index, distance))
 
-    # Sort the distances and get the indices of the num_cities nearest cities
     nearest_indices = sorted(city_distances, key=lambda x: x[1])[:num_cities]
 
-    # Get the city data and distances for the nearest cities
     nearest_cities_data = [(cities_df.iloc[index], distance) for index, distance in nearest_indices]
 
     return nearest_cities_data
@@ -120,16 +116,13 @@ def calculate_weighted_weather(start_date, periods, nearest_cities):
 def predict_weather_for_small_city(start_date, periods, latitude, longitude, max_distance_for_prediction=200):
     nearest_cities_data = find_nearest_big_cities(latitude, longitude)
 
-    # Check if there are no nearby big cities
     if not nearest_cities_data:
         logger.error(NO_NEARBY_CITIES_MESSAGE)
         return pd.DataFrame({'ds': pd.date_range(start=start_date, periods=periods, freq='h'),
                              'message': WEATHER_NOT_POSSIBLE_MESSAGE})
 
-    # Get the distance to the nearest big city
     nearest_distance = nearest_cities_data[0][1]
 
-    # Check if the distance is greater than the specified threshold
     if nearest_distance > max_distance_for_prediction:
         logger.error(f"{LOCATION_TOO_FAR_MESSAGE} (Distance: {nearest_distance} km)")
         return pd.DataFrame({'ds': pd.date_range(start=start_date, periods=periods, freq='h'),

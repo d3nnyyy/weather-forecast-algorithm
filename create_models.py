@@ -59,45 +59,36 @@ cities_df = pd.read_csv(get_absolute_path("data/list_of_cities.csv"))
 cities = cities_df['city'].str.lower()
 
 for city_name in cities:
-    # Check if models for the current city already exist
     model_directory_city = os.path.join(models_directory, city_name)
-    create_directory(model_directory_city)  # Create city directory if not exists
+    create_directory(model_directory_city)
 
-    # Load data for the current city
     df = load_city_data(city_name)
 
-    # Initialize the dictionary for the current city
     city_models = {}
 
-    # Iterate through each variable
     variables = ['temp_2', 'hum_2', 'temp_a', 'precip', 'rain', 'press', 'cloud', 'w_speed', 'w_dir']
     for variable in variables:
-        # Prepare data
+
         column_name = f'y_{variable}'
         df_temp = df[['ds', column_name]].rename(columns={column_name: 'y'})
 
-        # Feature engineering: Adding lag variables
         for i in range(1, 6):
             df_temp[f'y_{variable}_lag_{i}'] = df_temp['y'].shift(i)
 
-        # Drop rows with NaN values after adding lag variables
         df_temp = df_temp.dropna()
 
-        # Load hyperparameters for the current model
         changepoint_prior_scale, seasonality_prior_scale = load_hyperparameters(variable)
 
-        # Check if the model file exists in the city folder
         model_filename = os.path.join(model_directory_city, f"{variable}.pkl")
         if os.path.exists(model_filename):
             logger.info(f"Model for {variable} in {city_name} already exists.")
         else:
-            # Create and train the model with hyperparameters
+
             model = Prophet(changepoint_prior_scale=changepoint_prior_scale,
                             seasonality_prior_scale=seasonality_prior_scale)
             model.fit(df_temp)
             city_models[variable] = model
 
-            # Save the model to the city folder
             with open(model_filename, 'wb') as f:
                 pickle.dump(model, f)
             logger.info(f"Model for {variable} in {city_name} trained and saved to {model_filename}")

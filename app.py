@@ -30,5 +30,23 @@ def predict():
     return json_result
 
 
+@app.route('/predict_days', methods=['GET'])
+def predict_days():
+    start_date = request.args.get('start_date')
+    days = int(request.args.get('days', 1))
+    latitude = float(request.args.get('latitude'))
+    longitude = float(request.args.get('longitude'))
+
+    periods = days * 24
+
+    weather_data = predict_weather(start_date, periods, latitude, longitude)
+
+    median_data = weather_data.median()
+
+    json_result = json.dumps(median_data.to_dict(), default=str)
+
+    return json_result
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
