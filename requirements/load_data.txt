@@ -1,0 +1,4 @@
+pandas>=2.2.0
+openmeteo-requests>=1.1.0
+requests-cache>=1.1.0
+retry-requests>=0.8.0
