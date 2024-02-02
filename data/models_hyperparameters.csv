@@ -1,0 +1,10 @@
+model,changepoint_prior_scale,seasonality_prior_scale
+temp_2,0.01,1.0
+hum_2,0.01,20.0
+temp_a,0.1,20.0
+precip,0.1,20.0
+rain,0.1,20.0
+press,0.1,20.0
+cloud,0.1,20.0
+w_speed,0.1,20.0
+w_dir,0.1,20.0
