@@ -29,11 +29,9 @@ def get_models_for_big_city(city_name):
     for variable in os.listdir(city_folder):
         if variable.endswith('.pkl'):
             model_path = os.path.join(city_folder, variable)
-            variable_name = variable.replace('_prophet_model.pkl', '')
+            variable_name = variable.replace('.pkl', '')
             with open(model_path, 'rb') as f:
                 models[variable_name] = pickle.load(f)
-
-    print(f"Loaded models for {city_name}: {models.keys()}")
     return models
 
 
@@ -43,20 +41,10 @@ def predict_weather_for_big_city(start_date, periods, city_name):
 
     loaded_models = get_models_for_big_city(city_name)
 
-    print(f"Loaded models for {city_name}: {loaded_models.keys()}")
-
     for variable in loaded_models:
-        print(f"Predicting {variable} for {city_name}")
-
         result = loaded_models[variable].predict(result_df)
 
-        print("Predicted values:")
-        print(result.head())
-
         combined_df[variable] = result['yhat']
-
-        print("Combined df:")
-        print(combined_df.head())
 
     return combined_df
 
@@ -122,6 +110,6 @@ def predict_weather(start_date, periods, latitude, longitude):
         return predict_weather_for_small_city(start_date, periods, latitude, longitude)
 
 
-weather_data = predict_weather("2023-07-01", 5, 49.5557716, 25.591886)
+weather_data = predict_weather("2023-07-01", 5, 50.4500336, 30.5241361)
 print(weather_data.columns)
 print(weather_data.head())

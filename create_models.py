@@ -5,6 +5,14 @@ import pandas as pd
 from prophet import Prophet
 
 
+def create_directory(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        print(f"Directory {directory} created")
+    else:
+        print(f"Directory {directory} already exists")
+
+
 def load_city_data(city_name):
     file_path = f"data/{city_name}_weather.csv"
     df = pd.read_csv(file_path)
@@ -33,11 +41,7 @@ def load_hyperparameters(model_name):
 
 
 models_directory = "models"
-if not os.path.exists(models_directory):
-    os.makedirs(models_directory)
-    print(f"Directory {models_directory} created")
-else:
-    print(f"Directory {models_directory} already exists")
+create_directory(models_directory)
 
 models = {}
 
@@ -47,6 +51,7 @@ cities = cities_df['city'].str.lower()
 for city_name in cities:
     # Check if models for the current city already exist
     model_directory_city = os.path.join(models_directory, city_name)
+    create_directory(model_directory_city)  # Create city directory if not exists
 
     # Load data for the current city
     df = load_city_data(city_name)
@@ -57,7 +62,6 @@ for city_name in cities:
     # Iterate through each variable
     variables = ['temp_2', 'hum_2', 'temp_a', 'precip', 'rain', 'press', 'cloud', 'w_speed', 'w_dir']
     for variable in variables:
-
         # Prepare data
         column_name = f'y_{variable}'
         df_temp = df[['ds', column_name]].rename(columns={column_name: 'y'})
